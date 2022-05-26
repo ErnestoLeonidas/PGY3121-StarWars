@@ -21,6 +21,7 @@
       <select class="form-control" id="select_personajes">
 
       </select>
+      <p id="nombre_personaje"></p>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
@@ -37,18 +38,14 @@
 
         //Consumir API
         $.ajax({
-          url: "https://swapi.dev/api", 
+          url: "https://swapi.dev/api/people", 
           type: "GET",
           success: function(data){
 
-
-            $.each( data, function( key, value ) {
-              //alert( key + ": " + value );
-              //console.log(value);
-              //<option></option>
-              $("#select_personajes").append(`<option>`+key+`</option>`);
-
-              console.log(key);
+            // data.results: respresenta el array o json que voy a recorrer
+            $.each( data.results, function( key, value ) {
+              console.log(value.name);
+              $("#select_personajes").append(`<option>`+ value.name +`</option>`);
             });
 
         }});
