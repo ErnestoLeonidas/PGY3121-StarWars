@@ -8,6 +8,8 @@
         validar_acceso_v2(email, pass);
     });
 
+
+    //funcion normal
     function validar_acceso_v1(_email, _pass){
         if (_email == 'ernestoleonidas@gmail.com' && _pass == '123') {
             console.log('SI');
@@ -16,6 +18,7 @@
         }
     }
 
+    //funcion de flecha
     validar_acceso_v2 = (_email, _pass) => {
         if (_email == 'ernestoleonidas@gmail.com' && _pass == '123') {
             console.log('SI');
