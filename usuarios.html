@@ -201,6 +201,37 @@
     <!--- Mis scripts -->
     <script> 
 
+    //cargar tabla con usuarios cargados desde ajax
+    $(document).ready(function(){
+      $.ajax({
+        url: 'http://192.168.0.8:5000/usuarios',
+        type: 'GET',
+        dataType: 'json',
+        success: function(respuesta){
+          console.log(respuesta);
+          // crear fila en la tablaUsuarios
+          for (var i = 0; i < respuesta.length; i++) {
+            var fila = '<tr>' +
+                          '<th scope="row">' + (i+1) + '</th>' +
+                          '<td>' + respuesta[i].primer_nombre + '</td>' +
+                          '<td>' + respuesta[i].segundo_nombre + '</td>' +
+                          '<td>' + respuesta[i].apellido_paterno + '</td>' +
+                          '<td>' + respuesta[i].apellido_materno + '</td>' +
+                          '<td>' + respuesta[i].direccion + '</td>' +
+                          '<td>' +
+                            '<div class="btn-group btn-group-sm" role="group" aria-label="Basic example">' +
+                              '<button type="button" class="btn btn-success btnEditarusuario"><i class="fa-solid fa-pencil"></i></button>' +
+                              '<button type="button" class="btn btn-danger btnEliminarUsuario"><i class="fa-solid fa-trash"></i></button>' +
+                            '</div>' +
+                          '</td>' +
+                        '</tr>';
+            $('#tablaUsuarios').append(fila);
+          }
+          
+        }
+      });
+    });
+
       //click en .btnEditarusuario
       $(document).on('click', '.btnEditarusuario', function(){
         //obtener el id del usuario
@@ -225,6 +256,32 @@
         //viene un arra
         console.log(usuario);
       });
+
+      //registrar usuario con ajax
+      $(document).on('click', '#btnAgregarUsuario', function(){
+        var primer_nombre = $('#inputPrimerNombre').val();
+        var segundo_nombre = $('#inputSegundoNombre').val();
+        var apellido_paterno = $('#inputApellidoPaterno').val();
+        var apellido_materno = $('#inputApellidoMaterno').val();
+        var direccion = $('#inputDireccion').val();
+
+        $.ajax({
+          url: 'http://192.168.0.8:5000/usuarios',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify( {
+            primer_nombre: primer_nombre,
+            segundo_nombre: segundo_nombre,
+            apellido_paterno: apellido_paterno,
+            apellido_materno: apellido_materno,
+            direccion: direccion
+          }),
+          success: function(respuesta){
+            console.log(respuesta);
+          }
+        });
+      });
+      /*
 
       //añadir usuario a la lista con jquery
       $(document).on('click', '#btnAgregarUsuario', function(){
@@ -256,6 +313,7 @@
 
 
       });
+      */
 
       //borrar usuario de la lista con jquery
       $(document).on('click', '.btnEliminarUsuario', function(){
