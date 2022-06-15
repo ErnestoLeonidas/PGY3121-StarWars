@@ -28,7 +28,7 @@
             <a class="nav-link" href="usuarios.html">Usuarios <span class="sr-only">(current)</span></a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Personajes</a>
+            <a class="nav-link" href="tienda.html">Tienda</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">Naves</a>
@@ -96,6 +96,7 @@
 
               <a id="btnAgregarUsuario" class="btn btn-primary">Registrar</a>
               <a id="btnEditarUsuarioTabla" class="btn btn-success">Editar</a>
+              <a id="btnCancelarEdicion" class="btn btn-secondary">Cancelar</a>
             </div>
           </div>
         </div>
@@ -201,9 +202,14 @@
     <!--- Mis scripts -->
     <script> 
 
+    const API_URL = 'https://5000-ernestoleonida-flaskapi-a1pyakms39h.ws-us47.gitpod.io';
+
     //cargar tabla con usuarios cargados desde ajax
     $(document).ready(function(){
       $('#tablaUsuarios tbody').empty();
+      
+      $('#btnEditarUsuarioTabla').hide();
+      $('#btnCancelarEdicion').hide();
       actualizarTabla()
     });
 
@@ -228,36 +234,11 @@
         $('#inputDireccion').val(direccion);
         $('#inputIdUsuario').val(idUsuario);
 
-        //viene un arra
-        console.log(usuario);
+        $('#btnAgregarUsuario').hide();
+        $('#btnEditarUsuarioTabla').show();
+        $('#btnCancelarEdicion').show();
       });
 
-      //registrar usuario con ajax
-      $(document).on('click', '#btnAgregarUsuario', function(){
-        var primer_nombre = $('#inputPrimerNombre').val();
-        var segundo_nombre = $('#inputSegundoNombre').val();
-        var apellido_paterno = $('#inputApellidoPaterno').val();
-        var apellido_materno = $('#inputApellidoMaterno').val();
-        var direccion = $('#inputDireccion').val();
-
-        $.ajax({
-          url: 'http://192.168.0.2:5000/usuarios',
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify( {
-            primer_nombre: primer_nombre,
-            segundo_nombre: segundo_nombre,
-            apellido_paterno: apellido_paterno,
-            apellido_materno: apellido_materno,
-            direccion: direccion
-          }),
-          success: function(respuesta){
-            console.log(respuesta);
-            actualizarTabla()
-          }
-        });
-      });
-      /*
 
       //añadir usuario a la lista con jquery
       $(document).on('click', '#btnAgregarUsuario', function(){
@@ -268,33 +249,48 @@
         var apellido_materno = $('#inputApellidoMaterno').val();
         var direccion = $('#inputDireccion').val();
 
-        //crear la fila completa
-        var fila = '<tr>' +
-          '<th scope="row">' + obtenerUltimoId() + '</th>' +
-          '<td>' + primer_nombre + '</td>' +
-          '<td>' + segundo_nombre + '</td>' +
-          '<td>' + apellido_paterno + '</td>' +
-          '<td>' + apellido_materno + '</td>' +
-          '<td>' + direccion + '</td>' +
-          '<td>' +
-            '<div class="btn-group btn-group-sm" role="group" aria-label="Basic example">' +
-              '<button type="button" class="btn btn-success btnEditarusuario"><i class="fa-solid fa-pencil"></i></button>' +
-              '<button type="button" class="btn btn-danger btnEliminarUsuario"><i class="fa-solid fa-trash"></i></button>' +
-            '</div>'
-          '</td>' +
-        '</tr>';
-
-        //añadir la fila a la tabla
-        $('#tablaUsuarios').append(fila);
-
+        //cargar a la db mediante ajax mi usuario
+        $.ajax({
+            url: API_URL+'/usuarios',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                primer_nombre: primer_nombre,
+                segundo_nombre: segundo_nombre,
+                apellido_paterno: apellido_paterno,
+                apellido_materno: apellido_materno,
+                direccion: direccion
+            }),
+            success: function(respuesta){
+                console.log(respuesta);
+                actualizarTabla();
+            }
+        })
 
       });
-      */
+      
 
       //borrar usuario de la lista con jquery
       $(document).on('click', '.btnEliminarUsuario', function(){
         //eliminar la fila
-        $(this).closest('tr').remove();
+        var idUsuario = $(this).closest('tr').find('th').text();
+
+        $.ajax({
+            url: API_URL+'/usuarios/'+idUsuario,
+            type: 'DELETE',
+            dataType: 'json',
+            data: {
+                id:idUsuario
+            },
+            success: function(respuesta){
+                console.log('Usuario Eliminado')
+                actualizarTabla()
+            }
+
+        })
+
+
+
       });
 
       //funcion encontrar el ultimo id de la tabla
@@ -303,9 +299,8 @@
         return parseInt(ultimoId) + 1;
       }
 
-      //editar usuario con jquery
+      //editar usuario con ajax
       $(document).on('click', '#btnEditarUsuarioTabla', function(){
-
         //obtener los datos del usuario
         var primer_nombre = $('#inputPrimerNombre').val();
         var segundo_nombre = $('#inputSegundoNombre').val();
@@ -314,75 +309,80 @@
         var direccion = $('#inputDireccion').val();
         var idUsuario = $('#inputIdUsuario').val();
 
-        //crear la fila completa
-        var fila = '<tr>' +
-          '<th scope="row">' + idUsuario + '</th>' +
-          '<td>' + primer_nombre + '</td>' +
-          '<td>' + segundo_nombre + '</td>' +
-          '<td>' + apellido_paterno + '</td>' +
-          '<td>' + apellido_materno + '</td>' +
-          '<td>' + direccion + '</td>' +
-          '<td>' +
-            '<div class="btn-group btn-group-sm" role="group" aria-label="Basic example">' +
-              '<button type="button" class="btn btn-success btnEditarusuario"><i class="fa-solid fa-pencil"></i></button>' +
-              '<button type="button" class="btn btn-danger btnEliminarUsuario"><i class="fa-solid fa-trash"></i></button>' +
-            '</div>'
-          '</td>' +
-        '</tr>';
-
-        //eliminar la fila seleccionada segun su id
-        $('#tablaUsuarios tr th:contains(' + idUsuario + ')').closest('tr').remove();
-
-        //retorna el css del header
-        $('#tablaUsuarios tr:first th').css('background-color', '#f5f5f5');
-
-        //añadir la fila a la tabla
-        $('#tablaUsuarios').append(fila);
-
-        $('#tablaUsuarios').find('tr').sort(function(a, b){
-          var a = parseInt($(a).find('th').text());
-          var b = parseInt($(b).find('th').text());
-          return a - b;
-        }).appendTo('#tablaUsuarios');
+        $.ajax({
+            url: API_URL+'/usuarios/'+idUsuario,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                primer_nombre: primer_nombre,
+                segundo_nombre: segundo_nombre,
+                apellido_paterno: apellido_paterno,
+                apellido_materno: apellido_materno,
+                direccion: direccion,
+                id: idUsuario
+            }),
+            success: function(respuesta){
+                console.log('Usuario Modificado');
+                actualizarTabla();
+                limpiarFormulario();
+            }
+        })
 
       //fin
       });
 
-      //funcion actualizar tabla con ajax
       function actualizarTabla(){
-        //limpiar body de la tabla
         $('#tablaUsuarios tbody').empty();
 
         $.ajax({
-            url: 'http://192.168.0.2:5000/usuarios',
-            type: 'GET',
-            dataType: 'json',
-            success: function(respuesta){
-            console.log(respuesta);
-            // crear fila en la tablaUsuarios
-            for (var i = 0; i < respuesta.length; i++) {
-              var fila = '<tr>' +
-                            '<th scope="row">' + (i+1) + '</th>' +
-                            '<td>' + respuesta[i].primer_nombre + '</td>' +
-                            '<td>' + respuesta[i].segundo_nombre + '</td>' +
-                            '<td>' + respuesta[i].apellido_paterno + '</td>' +
-                            '<td>' + respuesta[i].apellido_materno + '</td>' +
-                            '<td>' + respuesta[i].direccion + '</td>' +
-                            '<td>' +
-                              '<div class="btn-group btn-group-sm" role="group" aria-label="Basic example">' +
-                                '<button type="button" class="btn btn-success btnEditarusuario"><i class="fa-solid fa-pencil"></i></button>' +
-                                '<button type="button" class="btn btn-danger btnEliminarUsuario"><i class="fa-solid fa-trash"></i></button>' +
-                              '</div>' +
-                            '</td>' +
-                          '</tr>';
-              $('#tablaUsuarios').append(fila);
+          url: API_URL+'/usuarios',
+          type: 'GET',
+          dataType: 'json',
+          success: function(respuesta){
+          console.log(respuesta);
+            for (var i = 0; i < respuesta.length; i++){
+                var fila = '<tr>' +
+                  '<th scope="row">' + respuesta[i].id + '</th>' +
+                  '<td>' + respuesta[i].primer_nombre + '</td>' +
+                  '<td>' + respuesta[i].segundo_nombre + '</td>' +
+                  '<td>' + respuesta[i].apellido_paterno + '</td>' +
+                  '<td>' + respuesta[i].apellido_materno + '</td>' +
+                  '<td>' + respuesta[i].direccion + '</td>' +
+                  '<td>' +
+                    '<div class="btn-group btn-group-sm" role="group" aria-label="Basic example">' +
+                      '<button type="button" class="btn btn-success btnEditarusuario"><i class="fa-solid fa-pencil"></i></button>' +
+                      '<button type="button" class="btn btn-danger btnEliminarUsuario"><i class="fa-solid fa-trash"></i></button>' +
+                    '</div>'
+                  '</td>' +
+                '</tr>';
+
+                $('#tablaUsuarios').append(fila)
             }
-            
+
+
           }
-        });
+        })
+
       }
 
 
+      $(document).on('click', '#btnCancelarEdicion', function(){
+        limpiarFormulario();
+      })
+
+
+      function limpiarFormulario(){
+        $('#inputPrimerNombre').val('');
+        $('#inputSegundoNombre').val('');
+        $('#inputApellidoPaterno').val('');
+        $('#inputApellidoMaterno').val('');
+        $('#inputDireccion').val('');
+        $('#inputIdUsuario').val('');
+
+        $('#btnAgregarUsuario').show();
+        $('#btnEditarUsuarioTabla').hide();
+        $('#btnCancelarEdicion').hide();
+      }
 
     
     </script>
